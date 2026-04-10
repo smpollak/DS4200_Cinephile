@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    #vis.vega-embed {
+      width: 100%;
+      display: flex;
+    }
+
+    #vis.vega-embed details,
+    #vis.vega-embed details summary {
+      position: relative;
+    }
+  </style>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@6"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@6.1.0"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@7"></script>
+</head>
+<body>
+  <div id="vis"></div>
+  <script>
+    (function(vegaEmbed) {
+      var spec = {"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "data": {"name": "data-c9d994e4ef29d399d25c4b364b585508"}, "mark": {"type": "point", "size": 100}, "encoding": {"tooltip": [{"field": "Movie", "type": "nominal"}, {"field": "% Watched in Theaters", "type": "quantitative"}, {"field": "x_choice", "type": "quantitative"}], "x": {"field": "x_choice", "title": "", "type": "quantitative"}, "y": {"field": "% Watched in Theaters", "type": "quantitative"}}, "params": [{"name": "x_col", "bind": {"input": "radio", "options": ["Budget (Millions USD)", "RT Critics Score (%)", "RT Audience Score (%)"], "labels": ["Budget (Millions USD)", "RT Critic Score", "RT Audience Score"], "name": "x Axis: "}, "value": "Budget (Millions USD)"}], "title": "Theater attendance of recent movies", "transform": [{"calculate": "datum[x_col]", "as": "x_choice"}], "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json", "datasets": {"data-c9d994e4ef29d399d25c4b364b585508": [{"Movie": "Wicked", "% Watched in Theaters": 0.512396694214876, "Budget (Millions USD)": 145, "RT Critics Score (%)": 88, "RT Audience Score (%)": 95}, {"Movie": "Zootopia 2", "% Watched in Theaters": 0.21487603305785125, "Budget (Millions USD)": 150, "RT Critics Score (%)": 93, "RT Audience Score (%)": 96}, {"Movie": "Sinners", "% Watched in Theaters": 0.24793388429752067, "Budget (Millions USD)": 95, "RT Critics Score (%)": 97, "RT Audience Score (%)": 97}, {"Movie": "Oppenheimer", "% Watched in Theaters": 0.39669421487603307, "Budget (Millions USD)": 100, "RT Critics Score (%)": 93, "RT Audience Score (%)": 91}, {"Movie": "Superman", "% Watched in Theaters": 0.34710743801652894, "Budget (Millions USD)": 225, "RT Critics Score (%)": 82, "RT Audience Score (%)": 96}, {"Movie": "No Other Choice", "% Watched in Theaters": 0.01652892561983471, "Budget (Millions USD)": 12, "RT Critics Score (%)": 97, "RT Audience Score (%)": 93}, {"Movie": "One Battle After Another", "% Watched in Theaters": 0.0743801652892562, "Budget (Millions USD)": 150, "RT Critics Score (%)": 94, "RT Audience Score (%)": 88}, {"Movie": "Marty Supreme", "% Watched in Theaters": 0.2892561983471074, "Budget (Millions USD)": 65, "RT Critics Score (%)": 93, "RT Audience Score (%)": 83}, {"Movie": "Barbie", "% Watched in Theaters": 0.6528925619834711, "Budget (Millions USD)": 145, "RT Critics Score (%)": 88, "RT Audience Score (%)": 83}]}};
+      var embedOpt = {"mode": "vega-lite"};
+
+      function showError(el, error){
+          el.innerHTML = ('<div style="color:red;">'
+                          + '<p>JavaScript Error: ' + error.message + '</p>'
+                          + "<p>This usually means there's a typo in your chart specification. "
+                          + "See the javascript console for the full traceback.</p>"
+                          + '</div>');
+          throw error;
+      }
+      const el = document.getElementById('vis');
+      vegaEmbed("#vis", spec, embedOpt)
+        .catch(error => showError(el, error));
+    })(vegaEmbed);
+
+  </script>
+</body>
+</html>
