@@ -103,4 +103,6 @@ fig.update_layout(
     plot_bgcolor="#fafafa",
 )
 
+fig.write_html("vis4_sankey.html", full_html=False)
+
 fig.show()
