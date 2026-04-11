@@ -24,8 +24,8 @@
     <h1>Are you a cinephile?</h1>
     <h2>Exploring the data</h2>
     <div id="vis1"></div>
-    <p>Theater vs. Streaming by Genre
-
+    <h3>Theater vs. Streaming by Genre</h3>
+    <p>
       This visualization shows the percent of responders who watched movies in the theater and on streaming, broken down by genre. This chart is interactive, and users are able to filter by male, female, and other responders. When 'other responders' is selected, users will notice that there are less genres present. This is because there were significantly less users that responded 'other' as their gender descriptor, and therefore some movies were marked 'did not watch'. From this visualization, we can see that responders are generally more likely to have seen movies in theater compared to on streaming. When filtering for male vs. female, we notice that female responders watched animations in theaters much more than their male counterparts. Thus, we can make the interpretation that genre is a big factor in whether someone decides to watch a movie in theaters or on streaming, as well as gender.
       </p>
     <script>
@@ -67,9 +67,16 @@
     })(vegaEmbed);
 
   </script>
-  <div id="vis3"></div>
-  <p>Streaming Services and Theater Visits
+  <h3>Movies by theater attendance rate</h3>
+  <p>The above scatter plot shows different movies we surveyed about and the percentage of respondants who watched it in theaters, and compares
+    it to Budget and Rotten Tomatoes scores. There is a slight positive correlation in budget vs. theater attendance, but there are some outliers, mainly <i>One Battle After Another,</i>
+    which had exceptionally low attendance despite a high budget.
+    There is little correlation between Audience scores and attendance, but the critic scores demonstrate a negative trend with theater attendance. This may show that critics prefer nicher movies.
 
+  </p>
+  <div id="vis3"></div>
+  <h3>Streaming Services and Theater Visits</h3>
+  <p>
     This visualization shows the relationship between the number of streaming services that a responder is subscribed to and how many movies they've seen in the past 3 months. When a user clicks on any segment in the top panel, the bottom panel is filtered to show only respondents with that theater attendance level, which makes it easy to isolate a specific group and see how they distribute across subscription counts. Interestingly enough, this chart goes against the hypothesis that more streaming services would result in a respondant watching less movies in the theater. However, we can see that the only bars with responders who have seen more than 10 movies in theaters are the 5 and 6+ streaming services subscribed to bars. This shows that people who are subscribed to more streaming services might just be more passionate about movies and therefore want to go to the theaters more often as well.
     </p>
   <script>
@@ -92,8 +99,9 @@
 
   </script>
   <div id="vis4"></div>
-  <p> In the Sankey diagram above, we are showing the relationship between gender and barrier to entry, and student status and barrier to entry. We want to know, between the students vs non-students and different genders, what the most common barriers to going to a movie theater are. We can see that the most common reason is “Cost of tickets”, with “No time” and “Don’t feel like it” close behind. These results are reasonable, as in most cases it is cheaper to rent or even buy the movie outright at home, and thus the only benefit of paying the extra cost of the ticket is the theater experience itself.
-  </p>
   <iframe src="../vis4_sankey.html" width="100%" height="600px" frameborder="0"></iframe>
+  <h3>Barriers to entry among different demographics</h3>
+  <p> In the Sankey diagram above, we are showing the relationship between gender and barrier to entry, and student status and barrier to entry. We want to know, between the students vs non-students and different genders, what the most common barriers to going to a movie theater are. We can see that the most common reason is “Cost of tickets”, with “No time” and “Don’t feel like it” close behind. These results are reasonable, as in most cases it is cheaper to rent or even buy the movie outright at home, and thus the only benefit of paying the extra cost of the ticket is the theater experience itself.</p>
+  <a href="../index.html">Back to main page</a>
 </body>
 </html>
