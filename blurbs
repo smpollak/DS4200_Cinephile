@@ -9,3 +9,15 @@ This visualization shows the relationship between the number of streaming servic
 Data: Gathering and cleaning processes
 
 Our data was collected through a survey that we created and distributed. We asked our respondants about their demographic information, movie-watching behaviour, and barriers to going to the theater. We sent this survey to family and friends, as well as posting it on a public forum. We collected 121 responses over the span of a month, and exported our data onto an Excel sheet. The cleaning process was quite simple, since all of the responses were standardized in our survey. The only column that needed cleaning was the location information, which we didn't end up using in our visualizations.
+
+
+Sankey:
+
+In the Sankey diagram above, we are showing the relationship between gender and barrier to entry, and student status and barrier to entry. We want to know, between the students vs non-students and different genders, what the most common barriers to going to a movie theater are. We can see that the most common reason is “Cost of tickets”, with “No time” and “Don’t feel like it” close behind. These results are reasonable, as in most cases it is cheaper to rent or even buy the movie outright at home, and thus the only benefit of paying the extra cost of the ticket is the theater experience itself.
+
+
+Main Page:
+
+This project explores the factors that influence moviegoers' decisions to watch films in theaters versus at home. Using survey and film data, we examine how genre, streaming subscriptions, budget, and critical reception relate to theatrical attendance - broken down by gender and viewer demographics. Prior research was done through multiple articles, however our findings are interpreted directly from our visualizations. We’ve created four visualizations to investigate why people don’t go to movies, which movies are successful, and which demographics of people are more likely to go to theaters
+
+
