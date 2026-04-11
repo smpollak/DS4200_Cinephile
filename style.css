@@ -48,6 +48,8 @@ body {
   font-size: 16px;
   line-height: 1.7;
   min-height: 100vh;
+  padding-left: 2rem;
+  padding-right: 2rem
 }
  
 /* --- Typography --- */
@@ -75,6 +77,7 @@ h3 {
 p {
   color: var(--color-muted);
   font-size: 0.97rem;
+  padding-bottom: 1rem
 }
  
 a {
