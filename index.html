@@ -1,20 +1,1006 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Are you a cinephile?</title>
-        <link rel="stylesheet" href="style.css">
-    </head>
-    <body>
-    <h1>Are you a cinephile?</h1>
-    <h2>Introduction</h2>
-    <img src="webpage/images/theater.webp" width="500">
-    <p>This project explores the factors that influence moviegoers' decisions to watch films in theaters versus at home. Using survey and film data, we examine how genre, streaming subscriptions, budget, and critical reception relate to theatrical attendance - broken down by gender and viewer demographics. Prior research was done through multiple articles, however our findings are interpreted directly from our visualizations. We’ve created four visualizations to investigate why people don’t go to movies, which movies are successful, and which demographics of people are more likely to go to theaters</p>
-    <img src="webpage/images/cnbc_article.png" width="500">
-    <img src="webpage/images/mirror_article.png" width="500">
-    <h3>Data: Gathering and cleaning processes</h3>
-    <p>Our data was collected through a survey that we created and distributed. We asked our respondants about their demographic information, movie-watching behaviour, and barriers to going to the theater. We sent this survey to family and friends, as well as posting it on a public forum. We collected 121 responses over the span of a month, and exported our data onto an Excel sheet. The cleaning process was quite simple, since all of the responses were standardized in our survey. The only column that needed cleaning was the location information, which we didn't end up using in our visualizations.</p>
-    <a href="webpage/visualizations.html">Explore the data</a>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Are You a Cinephile?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    /* ── Variables ── */
+    :root {
+      --bg:       #0a0a0a;
+      --surface:  #141414;
+      --border:   #222;
+      --gold:     #d4a843;
+      --gold2:    #f0c96a;
+      --red:      #c0392b;
+      --text:     #ede8df;
+      --muted:    #7a7570;
+      --serif:    'DM Serif Display', Georgia, serif;
+      --sans:     'DM Sans', system-ui, sans-serif;
+      --mono:     'Bebas Neue', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.75;
+      overflow-x: hidden;
+    }
+
+    /* ── Grain overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.028;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+
+    .nav-logo {
+      font-family: var(--mono);
+      font-size: 1.3rem;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--gold); }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative;
+      min-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      overflow: hidden;
+      padding: 0 0 5rem;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('theater.webp');
+      background-size: cover;
+      background-position: center 30%;
+      filter: brightness(0.35) saturate(0.6);
+      transform: scale(1.04);
+      transition: transform 12s ease-out;
+    }
+
+    .hero-bg.loaded { transform: scale(1.0); }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        transparent 30%,
+        rgba(10,10,10,0.6) 65%,
+        var(--bg) 100%
+      );
+    }
+
+    .hero-content {
+      position: relative;
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      width: 100%;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .hero-eyebrow::before {
+      content: '';
+      display: block;
+      width: 32px;
+      height: 1px;
+      background: var(--gold);
+      opacity: 0.7;
+    }
+
+    .hero h1 {
+      font-family: var(--serif);
+      font-size: clamp(3rem, 8vw, 6.5rem);
+      line-height: 1.0;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .hero-desc {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 520px;
+      line-height: 1.8;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 2.5rem;
+      flex-wrap: wrap;
+    }
+
+    .hero-stat-num {
+      font-family: var(--mono);
+      font-size: 2rem;
+      color: var(--gold);
+      display: block;
+      line-height: 1;
+    }
+
+    .hero-stat-lbl {
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 0.3rem;
+    }
+
+    /* ── Scroll cue ── */
+    .scroll-cue {
+      position: absolute;
+      bottom: 2rem;
+      right: 3rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .scroll-line {
+      width: 1px;
+      height: 48px;
+      background: linear-gradient(to bottom, transparent, var(--gold));
+      animation: scrolldown 1.8s ease-in-out infinite;
+    }
+
+    @keyframes scrolldown {
+      0%,100% { opacity: 0.3; transform: scaleY(0.6); }
+      50% { opacity: 1; transform: scaleY(1); }
+    }
+
+    /* ── Sections ── */
+    .section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 5rem 2rem;
+    }
+
+    .section-full {
+      padding: 5rem 2rem;
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      color: var(--red);
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 0 0 24px;
+      height: 1px;
+      background: var(--red);
+      opacity: 0.5;
+    }
+
+    .section h2 {
+      font-family: var(--serif);
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      margin-bottom: 1.2rem;
+      color: var(--text);
+    }
+
+    .section p {
+      color: var(--muted);
+      font-size: 0.97rem;
+      max-width: 680px;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Divider ── */
+    .filmstrip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+      opacity: 0.12;
+    }
+
+    .filmstrip-hole {
+      width: 12px;
+      height: 8px;
+      border-radius: 2px;
+      background: var(--text);
+      flex-shrink: 0;
+    }
+
+    .filmstrip-bar { flex: 1; height: 1px; background: var(--text); }
+
+    /* ── Article cards ── */
+    .article-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .article-card {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--surface);
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .article-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-3px);
+    }
+
+    .article-card img {
+      width: 100%;
+      display: block;
+      filter: saturate(0.7);
+      transition: filter 0.3s;
+    }
+
+    .article-card:hover img { filter: saturate(1); }
+
+    .article-card-body {
+      padding: 1rem 1.25rem;
+    }
+
+    .article-card-source {
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 500;
+      margin-bottom: 0.4rem;
+    }
+
+    .article-card-title {
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      line-height: 1.3;
+      color: var(--text);
+    }
+
+    /* ── Data pipeline ── */
+    .pipeline {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin: 2rem 0;
+      flex-wrap: wrap;
+    }
+
+    .pipeline-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.75rem 1.2rem;
+      text-align: center;
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .pipeline-step-num {
+      font-family: var(--mono);
+      font-size: 1.5rem;
+      color: var(--gold);
+      display: block;
+      line-height: 1;
+    }
+
+    .pipeline-step-lbl {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .pipeline-arrow {
+      color: var(--border);
+      font-size: 1.2rem;
+      padding: 0 0.5rem;
+      flex-shrink: 0;
+    }
+
+    /* ── Vis sections ── */
+    .vis-block {
+      margin-top: 4rem;
+      border-top: 1px solid var(--border);
+      padding-top: 3rem;
+    }
+
+    .vis-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .vis-num {
+      font-family: var(--mono);
+      font-size: 4rem;
+      line-height: 1;
+      color: var(--border);
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    .vis-meta { flex: 1; min-width: 220px; }
+
+    .vis-tag {
+      display: inline-block;
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: 1px solid var(--red);
+      color: var(--red);
+      padding: 2px 8px;
+      border-radius: 2px;
+      margin-bottom: 0.5rem;
+    }
+
+    .vis-meta h3 {
+      font-family: var(--serif);
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .vis-meta p {
+      font-size: 0.92rem;
+      color: var(--muted);
+      max-width: 540px;
+      line-height: 1.75;
+    }
+
+    .vis-frame {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    .vis-frame iframe {
+      display: block;
+      width: 100%;
+      border: none;
+    }
+
+    /* ── Findings ── */
+    .findings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-top: 2rem;
+    }
+
+    .finding-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--gold);
+      border-radius: 4px;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .finding-num {
+      font-family: var(--mono);
+      font-size: 2rem;
+      color: var(--gold);
+      opacity: 0.3;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .finding-card p {
+      font-size: 0.91rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 3rem 2rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    footer .footer-logo {
+      font-family: var(--mono);
+      font-size: 1.4rem;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    /* ── Vis placeholder ── */
+    .vis-placeholder {
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+
+    .vis-placeholder-icon { font-size: 2.5rem; }
+    .vis-placeholder p { color: var(--muted); font-size: 0.95rem; margin: 0; }
+    .vis-placeholder-sub { font-size: 0.8rem !important; opacity: 0.6; }
+    .vis-placeholder code {
+      background: var(--border);
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 0.78rem;
+      color: var(--gold);
+    }
+
+    /* ── Future Work ── */
+    .future-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      margin-top: 2rem;
+    }
+
+    .future-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.5rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .future-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-2px);
+    }
+
+    .future-icon {
+      font-family: var(--mono);
+      font-size: 1.8rem;
+      color: var(--gold);
+      opacity: 0.4;
+      line-height: 1;
+      margin-bottom: 0.75rem;
+    }
+
+    .future-card h4 {
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .future-card p {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* ── References ── */
+    .references-list {
+      list-style: none;
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .references-list li {
+      display: flex;
+      align-items: baseline;
+      gap: 1.25rem;
+      padding: 1rem 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      transition: border-color 0.2s;
+    }
+
+    .references-list li:hover { border-color: var(--gold); }
+
+    .ref-num {
+      font-family: var(--mono);
+      font-size: 1.1rem;
+      color: var(--gold);
+      opacity: 0.5;
+      flex-shrink: 0;
+      width: 1.5rem;
+    }
+
+    .ref-body {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+
+    .ref-title {
+      font-size: 0.92rem;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .ref-link {
+      font-size: 0.78rem;
+      color: var(--gold);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .ref-link:hover { color: var(--gold2); }
+
+    @media (max-width: 640px) {
+      .future-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .article-grid, .findings-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .vis-num { font-size: 2.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav>
+    <a class="nav-logo" href="#">🎬 Cinephile?</a>
+    <ul class="nav-links">
+      <li><a href="#intro">Overview</a></li>
+      <li><a href="#data">Data</a></li>
+      <li><a href="#visualizations">Visualizations</a></li>
+      <li><a href="#findings">Findings</a></li>
+      <li><a href="#future">Future Work</a></li>
+      <li><a href="#references">References</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-bg" id="heroBg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">DS 4200 · Information Presentation &amp; Data Visualization</div>
+      <h1>Are You a<br><em>Cinephile?</em></h1>
+      <p class="hero-desc">
+        Exploring the factors that influence moviegoers' decisions to watch films
+        in theaters versus at home through genre, streaming habits, budget, and demographics.
+      </p>
+      <div class="hero-stats">
+        <div>
+          <span class="hero-stat-num">121</span>
+          <div class="hero-stat-lbl">Survey Responses</div>
+        </div>
+        <div>
+          <span class="hero-stat-num">5</span>
+          <div class="hero-stat-lbl">Visualizations</div>
+        </div>
+        <div>
+          <span class="hero-stat-num">9</span>
+          <div class="hero-stat-lbl">Films Analyzed</div>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-cue">
+      <div class="scroll-line"></div>
+      Scroll
+    </div>
+  </section>
+
+  <!-- Intro -->
+  <section class="section" id="intro">
+    <div class="section-label">01 — Overview</div>
+    <h2>The Theater Dilemma</h2>
+    <p>
+      With the rise of streaming services, the movie theater industry faces increasing pressure.
+      Are audiences abandoning the big screen, or is the experience still irreplaceable?
+      This project investigates moviegoing behavior, barriers, and what drives people to show up.
+    </p>
+    <p>
+      Prior research spans multiple perspectives, from industry observers declaring theaters obsolete
+      to others arguing they're simply evolving. Our findings are drawn directly from survey data
+      and real film statistics.
+    </p>
+
+    <!-- Article reference cards -->
+    <div class="article-grid">
+      <div class="article-card">
+        <img src="mirror_article.png" alt="The Mirror: Death of the movie theatre">
+        <div class="article-card-body">
+          <div class="article-card-source">The Mirror · Oct 2025</div>
+          <div class="article-card-title">The death of the movie theatre</div>
+        </div>
+      </div>
+      <div class="article-card">
+        <img src="cnbc_article.png" alt="CNBC: Movie theaters evolving">
+        <div class="article-card-body">
+          <div class="article-card-source">CNBC · Feb 2023</div>
+          <div class="article-card-title">Movie theaters aren't dying — they're evolving</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="filmstrip">
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div>
+  </div>
+
+  <!-- Data -->
+  <section class="section" id="data">
+    <div class="section-label">02 — Data</div>
+    <h2>Gathering &amp; Cleaning</h2>
+    <p>
+      Our data was collected through a survey distributed to family, friends, and a public forum.
+      Respondents shared demographic info, movie-watching habits, and their personal barriers
+      to going to the theater.
+    </p>
+    <p>
+      We collected 121 responses over one month, exported to Excel. The cleaning process was minimal
+      since all responses were standardized in the survey. Only location data required cleanup, which
+      was ultimately unused in the visualizations.
+    </p>
+
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <span class="pipeline-step-num">Survey</span>
+        <div class="pipeline-step-lbl">Distributed</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <span class="pipeline-step-num">121</span>
+        <div class="pipeline-step-lbl">Responses</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <span class="pipeline-step-num">Excel</span>
+        <div class="pipeline-step-lbl">Export</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <span class="pipeline-step-num">Clean</span>
+        <div class="pipeline-step-lbl">Location only</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <span class="pipeline-step-num">4 Vis</span>
+        <div class="pipeline-step-lbl">Final outputs</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="filmstrip">
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div>
+  </div>
+
+  <!-- Visualizations -->
+  <section class="section" id="visualizations">
+    <div class="section-label">03 — Visualizations</div>
+    <h2>Exploring the Data</h2>
+    <p>Five charts exploring theater attendance patterns across genres, demographics, streaming habits, and individual films.</p>
+
+    <!-- Vis 1 -->
+    <div class="vis-block">
+      <div class="vis-header">
+        <div class="vis-num">01</div>
+        <div class="vis-meta">
+          <div class="vis-tag">Altair · Bar Chart</div>
+          <h3>Theater vs. Streaming by Genre</h3>
+          <p>
+            The percentage of respondents who watched movies in theaters vs. on streaming, broken down by genre.
+            Filter by gender to reveal how female respondents watched animation in theaters at significantly higher rates than male respondents.
+            Genre proves to be a major factor in theater-going decisions.
+          </p>
+        </div>
+      </div>
+      <div class="vis-frame">
+        <iframe src="vis1_genre_theater_pct.html" height="520" title="Genre Theater Percentage"></iframe>
+      </div>
+    </div>
+
+    <!-- Vis 2 -->
+    <div class="vis-block">
+      <div class="vis-header">
+        <div class="vis-num">02</div>
+        <div class="vis-meta">
+          <div class="vis-tag">Vega-Lite · Scatter Plot</div>
+          <h3>Film Attendance vs. Budget &amp; Ratings</h3>
+          <p>
+            How does a film's budget and critical reception correlate with how many people saw it in theaters?
+            Toggle between production budget, RT critics score, and RT audience score on the x-axis
+            to explore different relationships across nine recent films.
+          </p>
+        </div>
+      </div>
+      <div class="vis-frame">
+        <iframe src="vis2_movie_scatter_plot.html" height="480" title="Movie Scatter Plot"></iframe>
+      </div>
+    </div>
+
+    <!-- Vis 3 -->
+    <div class="vis-block">
+      <div class="vis-header">
+        <div class="vis-num">03</div>
+        <div class="vis-meta">
+          <div class="vis-tag">Altair · Linked Charts</div>
+          <h3>Streaming Services &amp; Theater Visits</h3>
+          <p>
+            Does having more streaming subscriptions mean fewer theater trips?
+            Click any segment in the top panel to filter the bottom panel by theater attendance level.
+            People subscribed to 5+ streaming services are actually the most likely to see 10+ movies in theaters.
+          </p>
+        </div>
+      </div>
+      <div class="vis-frame">
+        <iframe src="vis3_streaming_vs_theater.html" height="560" title="Streaming vs Theater"></iframe>
+      </div>
+    </div>
+
+    <!-- Vis 4 -->
+    <div class="vis-block">
+      <div class="vis-header">
+        <div class="vis-num">04</div>
+        <div class="vis-meta">
+          <div class="vis-tag">Plotly · Sankey Diagram</div>
+          <h3>Barriers to Attendance by Demographics</h3>
+          <p>
+            A Sankey diagram mapping the flow from student status → barrier to theater attendance → gender.
+            The most common barrier is ticket cost, followed by "No time" and "Don't feel like it", which
+            reflects that the streaming option is nearly always cheaper.
+          </p>
+        </div>
+      </div>
+      <div class="vis-frame">
+        <iframe src="vis4_sankey.html" height="520" title="Sankey Diagram"></iframe>
+      </div>
+    </div>
+
+    <!-- Vis 5 -->
+    <div class="vis-block">
+      <div class="vis-header">
+        <div class="vis-num">05</div>
+        <div class="vis-meta">
+          <div class="vis-tag">Coming Soon</div>
+          <h3>Visualization Title</h3>
+          <p>
+            Description of the fifth visualization goes here. Explain what the chart shows,
+            how to interact with it, and what the key takeaway is for the reader.
+          </p>
+        </div>
+      </div>
+      <div class="vis-placeholder">
+        <span class="vis-placeholder-icon">🎬</span>
+        <p>Visualization coming soon</p>
+        <p class="vis-placeholder-sub">Replace this block with: <code>&lt;iframe src="vis5_your_file.html" height="520"&gt;&lt;/iframe&gt;</code></p>
+      </div>
+    </div>
+  </section>
+
+  <div class="filmstrip">
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div>
+  </div>
+
+  <!-- Findings -->
+  <section class="section" id="findings">
+    <div class="section-label">04 — Findings</div>
+    <h2>What We Learned</h2>
+
+    <div class="findings-grid">
+      <div class="finding-card">
+        <div class="finding-num">01</div>
+        <p>
+          Genre is a significant predictor of theater attendance. Animation, in particular,
+          draws female respondents to theaters at higher rates than male respondents.
+        </p>
+      </div>
+      <div class="finding-card">
+        <div class="finding-num">02</div>
+        <p>
+          Counter to expectations, more streaming subscriptions actually correlate with more
+          theater visits, suggesting movie enthusiasts engage across all formats, not one or the other.
+        </p>
+      </div>
+      <div class="finding-card">
+        <div class="finding-num">03</div>
+        <p>
+          Cost is the leading barrier to theater attendance across all demographics,
+          followed by time constraints — not a preference for streaming content.
+        </p>
+      </div>
+      <div class="finding-card">
+        <div class="finding-num">04</div>
+        <p>
+          Critical reception (RT score) shows a weaker correlation with theater attendance
+          than might be expected — audience familiarity and cultural buzz may matter more.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="filmstrip">
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div>
+  </div>
+
+  <!-- Future Work -->
+  <section class="section" id="future">
+    <div class="section-label">05 — Future Work</div>
+    <h2>Future Work</h2>
+    <p>
+      Future work description goes here. 
+    </p>
+
+    <div class="future-grid">
+      <div class="future-card">
+        <div class="future-icon">01</div>
+        <h4>Future direction one</h4>
+        <p>Describe the first area of future work </p>
+      </div>
+      <div class="future-card">
+        <div class="future-icon">02</div>
+        <h4>Future direction two</h4>
+        <p>Describe the second area of future work here.</p>
+      </div>
+      <div class="future-card">
+        <div class="future-icon">03</div>
+        <h4>Future direction three</h4>
+        <p>Describe the third area of future work here.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="filmstrip">
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div><div class="filmstrip-bar"></div>
+    <div class="filmstrip-hole"></div>
+  </div>
+
+  <!-- References -->
+  <section class="section" id="references">
+    <div class="section-label">06 — References</div>
+    <h2>References</h2>
+    <ol class="references-list">
+      <li>
+        <span class="ref-num">1</span>
+        <div class="ref-body">
+          <span class="ref-title">Reference title goes here</span>
+          <a class="ref-link" href="#">Link →</a>
+        </div>
+      </li>
+      <li>
+        <span class="ref-num">2</span>
+        <div class="ref-body">
+          <span class="ref-title">Reference title goes here</span>
+          <a class="ref-link" href="#">Link →</a>
+        </div>
+      </li>
+      <li>
+        <span class="ref-num">3</span>
+        <div class="ref-body">
+          <span class="ref-title">Reference title goes here</span>
+          <a class="ref-link" href="#">Link →</a>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <span class="footer-logo">🎬 Cinephile?</span>
+    DS 4200 · Information Presentation &amp; Data Visualization · Spring 2026
+  </footer>
+
+  <script>
+    // Subtle parallax on hero bg
+    const bg = document.getElementById('heroBg');
+    setTimeout(() => bg.classList.add('loaded'), 100);
+
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      if (bg) bg.style.transform = `scale(1.0) translateY(${y * 0.25}px)`;
+    });
+  </script>
 </body>
 </html>
