@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Theater vs Streaming — Film Profile Radar</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #16161a;
+    --border: #2a2a32;
+    --theater: #f0c040;
+    --streaming: #5b8fff;
+    --text: #e8e4d9;
+    --muted: #6b6878;
+    --accent: #ff6b6b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 36px;
+    max-width: 640px;
+  }
+
+  header .eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  header h1 em {
+    color: var(--theater);
+    font-style: italic;
+  }
+
+  header p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* Film selector pills */
+  #film-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 28px;
+    max-width: 720px;
+  }
+
+  .film-pill {
+    padding: 6px 14px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    letter-spacing: 0.05em;
+  }
+
+  .film-pill:hover {
+    border-color: var(--theater);
+    color: var(--theater);
+  }
+
+  .film-pill.active {
+    background: var(--theater);
+    border-color: var(--theater);
+    color: #0d0d0f;
+    font-weight: 500;
+  }
+
+  /* Chart container */
+  #chart-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 620px;
+  }
+
+  svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* Tooltip */
+  #tooltip {
+    position: fixed;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    font-size: 11px;
+    color: var(--text);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 100;
+    line-height: 1.8;
+    min-width: 160px;
+  }
+
+  #tooltip .t-film {
+    font-family: 'DM Serif Display', serif;
+    font-size: 14px;
+    color: var(--theater);
+    margin-bottom: 4px;
+  }
+
+  /* Legend */
+  #legend {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin-top: 24px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .note {
+    margin-top: 28px;
+    font-size: 10px;
+    color: var(--muted);
+    text-align: center;
+    max-width: 500px;
+    line-height: 1.7;
+    letter-spacing: 0.03em;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">DS 4200 · Visualization 05</div>
+  <h1>The <em>Theater</em> Film Profile</h1>
+  <p>Each axis shows the % of respondents who watched that film in a specific way.<br/>
+  Select films below to highlight and compare their profiles.</p>
+</header>
+
+<div id="film-controls"></div>
+<div id="chart-wrap"><svg id="radar"></svg></div>
+
+<div id="legend">
+  <div class="legend-item">
+    <div class="legend-dot" style="background:var(--theater)"></div>
+    Watched in Theaters
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:var(--streaming)"></div>
+    Watched on Streaming
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:var(--muted)"></div>
+    Did Not Watch
+  </div>
+</div>
+
+<p class="note">
+  Radar axes = % of survey respondents (n=121) per viewing category.<br/>
+  Click film pills above to highlight individual profiles.
+</p>
+
+<div id="tooltip"></div>
+
+<script>
+// Column rename map
+const COL = {
+  "Timestamp":                                   "timestamp",
+  "How old are you?":                            "age",
+  "How would you best describe yourself?":       "gender",
+  "Are you currently a student?":                "isStudent",
+  "What city do you live in?":                   "city",
+  "For the following list of movies, please select if/where you first watched each movie. [Wicked]":                 "wicked",
+  "For the following list of movies, please select if/where you first watched each movie. [Zootopia 2]":             "zootopia2",
+  "For the following list of movies, please select if/where you first watched each movie. [Sinners]":                "sinners",
+  "For the following list of movies, please select if/where you first watched each movie. [Oppenheimer]":            "oppenheimer",
+  "For the following list of movies, please select if/where you first watched each movie. [Superman]":               "superman",
+  "For the following list of movies, please select if/where you first watched each movie. [No Other Choice]":        "noOtherChoice",
+  "For the following list of movies, please select if/where you first watched each movie. [One Battle After Another]":"oneBattleAfterAnother",
+  "For the following list of movies, please select if/where you first watched each movie. [Dune 2]":                 "dune2",
+  "For the following list of movies, please select if/where you first watched each movie. [Marty Supreme]":          "martySupreme",
+  "For the following list of movies, please select if/where you first watched each movie. [Barbie]":                 "barbie",
+  "How many movies have you seen in theaters in the past 3 months (estimate)?":  "theaterCount",
+  "How many movies have you watched on streaming in the past 3 months (estimate)?": "streamingCount",
+  "Which streaming services are you subscribed to? (Select all that apply)":     "streamingServices",
+  "What is your biggest barrier to going to the movie theater?":                 "barrier"
+};
+
+const FILM_KEYS = ["wicked","zootopia2","sinners","oppenheimer","superman",
+                   "noOtherChoice","oneBattleAfterAnother","dune2","martySupreme","barbie"];
+
+const FILM_LABELS = {
+  wicked: "Wicked", zootopia2: "Zootopia 2", sinners: "Sinners",
+  oppenheimer: "Oppenheimer", superman: "Superman", noOtherChoice: "No Other Choice",
+  oneBattleAfterAnother: "One Battle After Another", dune2: "Dune 2",
+  martySupreme: "Marty Supreme", barbie: "Barbie"
+};
+
+// Radar axes 
+const AXES = [
+  { key: "theaterPct",   label: "% In Theaters" },
+  { key: "streamPct",    label: "% On Streaming" },
+  { key: "didNotWatch",  label: "% Did Not Watch" },
+];
+
+// Parse & rename CSV ─
+function renameRow(raw) {
+  const out = {};
+  for (const [origKey, newKey] of Object.entries(COL)) {
+    out[newKey] = raw[origKey] ?? "";
+  }
+  return out;
+}
+
+// Compute film-level stats 
+function computeFilmStats(data) {
+  return FILM_KEYS.map(film => {
+    const total = data.length;
+    const theater  = data.filter(d => d[film] === "Watched in theaters").length;
+    const stream   = data.filter(d => d[film] === "Watched on streaming").length;
+    const didnt    = data.filter(d => d[film] === "Did not watch").length;
+    return {
+      film,
+      label: FILM_LABELS[film],
+      theaterPct:  theater / total,
+      streamPct:   stream  / total,
+      didNotWatch: didnt   / total,
+      theaterN: theater, streamN: stream, didntN: didnt, total
+    };
+  });
+}
+
+// Draw radar 
+function drawRadar(filmStats) {
+  const W = 560, H = 560, cx = W / 2, cy = H / 2;
+  const R = 190; // max radius
+  const levels = 5;
+  const numAxes = AXES.length;
+
+  const svg = d3.select("#radar")
+    .attr("viewBox", `0 0 ${W} ${H}`);
+
+  svg.selectAll("*").remove();
+
+  const angleSlice = (2 * Math.PI) / numAxes;
+
+  // Scale: 0–1 → 0–R
+  const rScale = d3.scaleLinear().domain([0, 1]).range([0, R]);
+
+  // ── Grid rings
+  const gridG = svg.append("g");
+  for (let lvl = 1; lvl <= levels; lvl++) {
+    const r = (R / levels) * lvl;
+    gridG.append("circle")
+      .attr("cx", cx).attr("cy", cy).attr("r", r)
+      .attr("fill", "none")
+      .attr("stroke", "#2a2a32")
+      .attr("stroke-width", 1);
+
+    gridG.append("text")
+      .attr("x", cx + 4)
+      .attr("y", cy - r + 4)
+      .attr("fill", "#4a4858")
+      .attr("font-size", "9px")
+      .attr("font-family", "DM Mono, monospace")
+      .text(`${Math.round((lvl / levels) * 100)}%`);
+  }
+
+  // Axis lines + labels
+  const axisG = svg.append("g");
+  AXES.forEach((axis, i) => {
+    const angle = angleSlice * i - Math.PI / 2;
+    const x2 = cx + R * Math.cos(angle);
+    const y2 = cy + R * Math.sin(angle);
+
+    axisG.append("line")
+      .attr("x1", cx).attr("y1", cy)
+      .attr("x2", x2).attr("y2", y2)
+      .attr("stroke", "#2a2a32")
+      .attr("stroke-width", 1.5);
+
+    // label positioning
+    const labelR = R + 28;
+    const lx = cx + labelR * Math.cos(angle);
+    const ly = cy + labelR * Math.sin(angle);
+
+    axisG.append("text")
+      .attr("x", lx).attr("y", ly)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr("fill", "#9990b0")
+      .attr("font-size", "11px")
+      .attr("font-family", "DM Mono, monospace")
+      .attr("letter-spacing", "0.04em")
+      .text(axis.label);
+  });
+
+  // Helper: polygon points for one film
+  function filmPoints(d) {
+    return AXES.map((axis, i) => {
+      const angle = angleSlice * i - Math.PI / 2;
+      const r = rScale(d[axis.key]);
+      return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)];
+    });
+  }
+
+  const lineGen = d3.line().x(d => d[0]).y(d => d[1]).curve(d3.curveLinearClosed);
+
+  // Color per film
+  const filmColorScale = d3.scaleOrdinal()
+    .domain(FILM_KEYS)
+    .range(d3.schemeTableau10);
+
+  // Draw each film's polygon
+  const filmsG = svg.append("g").attr("class", "films");
+
+  filmStats.forEach(d => {
+    const pts = filmPoints(d);
+    const col = filmColorScale(d.film);
+
+    const g = filmsG.append("g")
+      .attr("class", `film-group film-${d.film}`)
+      .style("opacity", 0.55)
+      .style("cursor", "pointer");
+
+    g.append("path")
+      .attr("d", lineGen(pts))
+      .attr("fill", col)
+      .attr("fill-opacity", 0.08)
+      .attr("stroke", col)
+      .attr("stroke-width", 1.5)
+      .attr("stroke-opacity", 0.7);
+
+    // Dots at each axis vertex
+    pts.forEach((pt, i) => {
+      g.append("circle")
+        .attr("cx", pt[0]).attr("cy", pt[1]).attr("r", 4)
+        .attr("fill", col)
+        .attr("stroke", "#0d0d0f")
+        .attr("stroke-width", 1.5);
+    });
+  });
+
+  //Highlight logic
+  let activeFilms = new Set();
+
+  function updateHighlight() {
+    filmsG.selectAll(".film-group").each(function(_, i) {
+      const el = d3.select(this);
+      const cls = [...this.classList].find(c => c.startsWith("film-") && c !== "film-group");
+      const filmKey = cls ? cls.replace("film-", "") : null;
+      if (activeFilms.size === 0 || activeFilms.has(filmKey)) {
+        el.style("opacity", 1)
+          .select("path")
+          .attr("fill-opacity", 0.18)
+          .attr("stroke-width", 2.5);
+      } else {
+        el.style("opacity", 0.08)
+          .select("path")
+          .attr("fill-opacity", 0.04)
+          .attr("stroke-width", 1);
+      }
+    });
+  }
+
+  // Expose toggle to pills
+  window._radarToggle = function(filmKey) {
+    if (activeFilms.has(filmKey)) {
+      activeFilms.delete(filmKey);
+    } else {
+      activeFilms.add(filmKey);
+    }
+    updateHighlight();
+  };
+
+  // Tooltip on hover over dots
+  const tooltip = d3.select("#tooltip");
+
+  filmStats.forEach(d => {
+    const g = filmsG.select(`.film-${d.film}`);
+    g.on("mousemove", function(event) {
+        tooltip
+          .style("opacity", 1)
+          .style("left", (event.clientX + 16) + "px")
+          .style("top",  (event.clientY - 10) + "px")
+          .html(`
+            <div class="t-film">${d.label}</div>
+            🎬 Theater: ${Math.round(d.theaterPct * 100)}% (${d.theaterN})<br/>
+            📺 Streaming: ${Math.round(d.streamPct * 100)}% (${d.streamN})<br/>
+            ✗ Did Not Watch: ${Math.round(d.didNotWatch * 100)}% (${d.didntN})
+          `);
+      })
+      .on("mouseleave", function() {
+        tooltip.style("opacity", 0);
+      });
+  });
+}
+
+// Build film pills 
+function buildPills(filmStats) {
+  const container = d3.select("#film-controls");
+  filmStats.forEach(d => {
+    container.append("button")
+      .attr("class", "film-pill")
+      .attr("data-film", d.film)
+      .text(d.label)
+      .on("click", function() {
+        this.classList.toggle("active");
+        window._radarToggle(d.film);
+      });
+  });
+}
+
+// Load data
+d3.csv("ds4200_data.csv").then(rawData => {
+  const data = rawData.map(renameRow);
+  const filmStats = computeFilmStats(data);
+  buildPills(filmStats);
+  drawRadar(filmStats);
+}).catch(err => {
+  // Fallback demo data if CSV not found
+  console.warn("CSV not found, using demo data:", err);
+  const demo = FILM_KEYS.map((film, i) => ({
+    film,
+    label: FILM_LABELS[film],
+    theaterPct:  [0.72, 0.31, 0.58, 0.85, 0.44, 0.12, 0.09, 0.61, 0.27, 0.79][i],
+    streamPct:   [0.15, 0.22, 0.28, 0.10, 0.38, 0.18, 0.14, 0.25, 0.31, 0.14][i],
+    didNotWatch: [0.13, 0.47, 0.14, 0.05, 0.18, 0.70, 0.77, 0.14, 0.42, 0.07][i],
+    theaterN: 0, streamN: 0, didntN: 0, total: 121
+  }));
+  buildPills(demo);
+  drawRadar(demo);
+});
+</script>
+</body>
+</html>
